@@ -1,0 +1,7 @@
+Use PPSSPP as emulator
+
+Set 'ppsspp' as an alias to PPSSPP executable program.
+Run the emulator from terminal and use --escape-exit flag to quickly exit the emulator.
+
+Run this to test the game:
+'ppsspp $(wslpath -w ./<name of the game>) --escape-exit'
