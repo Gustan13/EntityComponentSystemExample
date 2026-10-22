@@ -3,9 +3,8 @@
 
 typedef struct {
     int visible;
-    float x, y;
-    float w, h;
-    unsigned char u, v;
+    // unsigned char u, v;
+    unsigned char r, g, b;
 } visual_component;
 
 #endif

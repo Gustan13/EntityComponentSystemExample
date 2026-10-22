@@ -7,6 +7,15 @@
 
 #include "sparse.h"
 
+#include <stddef.h>
+
+enum {
+    SLEEP,
+    SHOT,
+    SHIELD,
+    SPEED
+};
+
 typedef struct {
     int *entities;
 
@@ -16,9 +25,10 @@ typedef struct {
     sparse_set* prjc; // PROJECTILE COMPONENT
 
     // POWER UPS
-    sparse_set* sleep_c;
-    sparse_set* shooting_c;
-    sparse_set* shield_c;
+    sparse_set* type;
+    sparse_set* sleep_c; // is sleeping
+    sparse_set* shooting_c; // shooting level
+    sparse_set* shield_c; // shield level
 } ECS;
 
 ECS* create_ecs(size_t max_entities);

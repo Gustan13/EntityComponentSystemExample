@@ -5,7 +5,10 @@ project(hello)
 add_executable(${PROJECT_NAME}
     # test.c    
     main.c
+    ecs.c
     entities.c
+    memory.c
+    sparse.c
     ppsspp_emu_api.h
 )
 

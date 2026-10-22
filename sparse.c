@@ -18,10 +18,6 @@ sparse_set *create_sparse_set(long int component_size, long int max_size) {
     }
 
     sparse_set* set = NULL;
-    set->sparse = NULL;
-    set->dense = NULL;
-    set->component = NULL;
-
 
     set = (sparse_set*)xmalloc(sizeof(sparse_set));
     set->sparse = (int*)xmalloc(sizeof(int) * max_size);
@@ -67,7 +63,7 @@ void add_component_to_id(sparse_set* set, void* component_info, int id) {
 
     set->sparse[id] = set->size;
     set->dense[set->size] = id;
-    memcpy((char*)set->component, (char*)component_info, set->size);
+    memcpy((char*)(set->component + set->size * set->component_size), (char*)component_info, set->component_size);
     set->size += 1;
 }
 
@@ -79,13 +75,19 @@ void remove_component_from_id(sparse_set *set, int id) {
     set->dense[pos] = set->dense[set->size - 1];
     set->dense[set->size - 1] = -1;
     set->sparse[set->dense[pos]] = pos;
-    memcpy((char*)&(set->component[pos]), (char*)&(set->component[set->size - 1]), set->component_size);
+    // memcpy((char*)&(((char*)set->component)[pos]), (char*)&(((char*)set->component)[set->size - 1]), set->component_size);
+    memcpy(
+        (char*)(set->component + pos * set->component_size),
+        (char*)(set->component + (set->size - 1) * set->component_size),
+        set->component_size
+    );
     set->size -= 1;
 }
 
 void *get_component_from_id(sparse_set* set, int id) {
     if (set->sparse[id] < 0 || id < 0)
-        return;
+        return NULL;
 
-    return &set->component[set->sparse[id]];
+    // return &((char*)set->component)[set->sparse[id]];
+    return (char*)(set->component + set->sparse[id] * set->component_size);
 }

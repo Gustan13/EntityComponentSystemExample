@@ -1,4 +1,5 @@
 #include "ecs.h"
+#include "entities.h"
 #include "define.h"
 #include "ppsspp_emu_api.h"
 
@@ -159,6 +160,10 @@ int main(void)  {
 
     ECS* ecs = create_ecs(MAX_ENTITIES);
 
+    create_player(ecs);
+    create_alien(ecs);
+    create_powerup(ecs, SLEEP);
+
     Texture* texture = NULL;
     texture = loadTexture("grass.png");
 
@@ -167,7 +172,17 @@ int main(void)  {
 
     while(1) {
         startFrame();
-        
+
+        for (int i = 0; i < MAX_ENTITIES; ++i) {
+            if (!ecs->entities[i])
+                continue;
+            visual_component *vc = (visual_component*)get_component_from_id(ecs->vc, i);
+            rect_component* rc = (rect_component*)get_component_from_id(ecs->pc, i);
+
+            if (vc->visible)
+            drawRect(texture, rc->x, rc->y);
+        }
+
         endFrame();
     }
 
