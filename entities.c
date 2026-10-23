@@ -64,8 +64,15 @@ void create_alien(ECS* ecs) {
     if (!vx) vx = -1;
     if (!vy) vy = -1;
 
+    // rect_component rc = {
+    //     rand() % 464, rand() % 258,
+    //     16, 16,
+    //     vx, vy,
+    //     5
+    // };
+
     rect_component rc = {
-        rand() % 464, rand() % 258,
+        0, 0,
         16, 16,
         vx, vy,
         5
@@ -93,8 +100,15 @@ void create_powerup(ECS* ecs, int type) {
 
     add_component_to_id(ecs->vc, &vc, id);
 
+    // rect_component rc = {
+    //     rand() % 464, rand() % 258,
+    //     16, 16,
+    //     0, 0,
+    //     5
+    // };
+
     rect_component rc = {
-        rand() % 464, rand() % 258,
+        60, 60,
         16, 16,
         0, 0,
         5

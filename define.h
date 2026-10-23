@@ -1,6 +1,11 @@
 #ifndef _DEFINE
 #define _DEFINE
 
+#define BUFFER_WIDTH 512
+#define BUFFER_HEIGHT 272
+#define SCREEN_WIDTH 480
+#define SCREEN_HEIGHT BUFFER_HEIGHT
+
 #define MAX_ENTITIES 24
 #define PLAYER 0
 

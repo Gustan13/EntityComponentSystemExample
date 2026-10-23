@@ -11,6 +11,7 @@ ECS* create_ecs(size_t max_entities) {
     ECS* ecs = (ECS*)xmalloc(sizeof(ECS));
 
     ecs->entities = (int*)malloc(sizeof(int) * max_entities); 
+    for (int i = 0; i < max_entities; ++i) ecs->entities[i] = 0;
 
     ecs->vc = create_sparse_set(sizeof(visual_component), max_entities);
 

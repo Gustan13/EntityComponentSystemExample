@@ -5,7 +5,9 @@ project(hello)
 add_executable(${PROJECT_NAME}
     # test.c    
     main.c
+    gu.c
     ecs.c
+    draw.c
     entities.c
     memory.c
     sparse.c
