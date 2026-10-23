@@ -21,13 +21,13 @@ void create_player(ECS* ecs) {
     ecs->entities[PLAYER] = 1;
 
     visual_component vc = {
-        1, 255, 0, 0
+        1, 0xFF0000FF
     };
 
     add_component_to_id(ecs->vc, &vc, PLAYER);
 
     rect_component rc = {
-        150, 200,
+        150, 50,
         16, 16,
         0, 0,
         5
@@ -53,15 +53,21 @@ void create_alien(ECS* ecs) {
     ecs->entities[id] = 1;
 
     visual_component vc = {
-        1, 0, 255, 0
+        1, 0xFF00FF00
     };
 
     add_component_to_id(ecs->vc, &vc, id);
 
+    float vx = rand() % 2;
+    float vy = rand() % 2;
+
+    if (!vx) vx = -1;
+    if (!vy) vy = -1;
+
     rect_component rc = {
         rand() % 464, rand() % 258,
         16, 16,
-        0, 0,
+        vx, vy,
         5
     };
 
@@ -82,7 +88,7 @@ void create_powerup(ECS* ecs, int type) {
     ecs->entities[id] = 1;
 
     visual_component vc = {
-        1, 0, 0, 255
+        1, 0xFFFF0000
     };
 
     add_component_to_id(ecs->vc, &vc, id);

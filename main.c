@@ -1,15 +1,16 @@
 #include "ecs.h"
 #include "entities.h"
 #include "define.h"
-#include "ppsspp_emu_api.h"
+// #include "ppsspp_emu_api.h"
 
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
+// #define STB_IMAGE_IMPLEMENTATION
+// #include "stb_image.h"
 
 #include <pspuser.h>
 #include <pspgu.h>
 #include <pspdebug.h>
 #include <pspdisplay.h>
+#include <pspctrl.h>
 #include <stdlib.h>
 
 // PSP_MODULE_INFO is required
@@ -35,13 +36,13 @@ typedef struct
     uint32_t * data;
 } Texture;
 
-int print_hello() {
-    if (ppsspp_is_emulator()) {
-        ppsspp_send_output_str("Hello!\n");
-        return 1;
-    }
-    return 0;
-}
+// int print_hello() {
+//     if (ppsspp_is_emulator()) {
+//         ppsspp_send_output_str("Hello!\n");
+//         return 1;
+//     }
+//     return 0;
+// }
 
 int exit_callback(int arg1, int arg2, void *common) {
     running = 0;
@@ -115,18 +116,18 @@ typedef struct {
     float x, y, z;
 } Vertex;
 
-Texture * loadTexture(const char * filename) {
-    Texture * texture = (Texture *) calloc(1, sizeof(Texture));
+// Texture * loadTexture(const char * filename) {
+//     Texture * texture = (Texture *) calloc(1, sizeof(Texture));
 
-    texture->data = (uint32_t *) stbi_load(filename, &(texture->width), &(texture->height), NULL, STBI_rgb_alpha);
+//     texture->data = (uint32_t *) stbi_load(filename, &(texture->width), &(texture->height), NULL, STBI_rgb_alpha);
 
-    // Make sure the texture cache is reloaded
-    sceKernelDcacheWritebackInvalidateAll();
+//     // Make sure the texture cache is reloaded
+//     sceKernelDcacheWritebackInvalidateAll();
 
-    return texture;
-}
+//     return texture;
+// }
 
-void drawRect(Texture* texture, float x, float y) {
+void drawText(Texture* texture, float x, float y) {
 
     static Vertex vertices[2];
 
@@ -144,19 +145,46 @@ void drawRect(Texture* texture, float x, float y) {
     vertices[1].u = texture->width;
     vertices[1].v = texture->height;
 
-    sceGuTexMode(GU_PSM_8888, 0, 0, GU_FALSE);
-    sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGB);
-    sceGuTexImage(0, texture->width, texture->height, texture->width, texture->data);
+    // sceGuTexMode(GU_PSM_8888, 0, 0, GU_FALSE);
+    // sceGuTexFunc(GU_TFX_REPLACE, GU_TCC_RGB);
+    // sceGuTexImage(0, texture->width, texture->height, texture->width, texture->data);
 
-    sceGuEnable(GU_TEXTURE_2D); 
-    sceGuDrawArray(GU_SPRITES, GU_COLOR_8888 | GU_TEXTURE_32BITF | GU_VERTEX_32BITF | GU_TRANSFORM_2D, 2, 0, vertices);
+    // sceGuEnable(GU_TEXTURE_2D); 
+    // sceGuDrawArray(GU_SPRITES, GU_COLOR_8888 | GU_TEXTURE_32BITF | GU_VERTEX_32BITF | GU_TRANSFORM_2D, 2, 0, vertices);
+    sceGuColor(0xFFFFFFFF);
     
-    sceGuDisable(GU_TEXTURE_2D);
+    // sceGuDisable(GU_TEXTURE_2D);
+}
+
+typedef struct {
+    unsigned short u, v;
+    short x, y, z;
+} Vertex_t;
+
+void drawRect(visual_component* vc, rect_component* rc) {
+    if (!vc->visible)
+        return;
+
+    static Vertex_t vertices[2];
+
+    vertices[0].x = rc->x;
+    vertices[0].y = rc->y;
+
+    vertices[1].x = rc->x + rc->w;
+    vertices[1].y = rc->y + rc->h;
+
+    sceGuColor(vc->color);
+    sceGuDrawArray(GU_SPRITES, GU_TEXTURE_16BIT | GU_VERTEX_16BIT | GU_TRANSFORM_2D, 2, 0, vertices);
+    // sceGuDrawBuffer()
 }
 
 int main(void)  {
+    SceCtrlData pad;
+
     // Use above functions to make exiting possible
     setup_callbacks();
+
+    pspDebugScreenInit();
 
     ECS* ecs = create_ecs(MAX_ENTITIES);
 
@@ -164,23 +192,85 @@ int main(void)  {
     create_alien(ecs);
     create_powerup(ecs, SLEEP);
 
-    Texture* texture = NULL;
-    texture = loadTexture("grass.png");
+
+    sceCtrlSetSamplingCycle(0);
+    sceCtrlSetSamplingMode(PSP_CTRL_MODE_ANALOG);
 
     initGu();
     running = 1;
 
     while(1) {
+
+        pspDebugScreenSetXY(0, 2);
+
+        sceCtrlReadBufferPositive(&pad, 1);
+
+        pspDebugScreenPrintf("Analog X = %f, ", (float)(pad.Lx) - 128);
+        pspDebugScreenPrintf("Analog Y = %f, \n", (float)(pad.Ly) - 128);
+
+        if (ecs->entities[PLAYER])
+        {
+
+            rect_component* rc = get_component_from_id(ecs->pc, PLAYER);
+
+            rc->vx = rc->vy = 0;
+
+            float lx = (float)(pad.Lx) - 128;
+            float ly = (float)(pad.Ly) - 128;
+
+            if (lx)
+            {
+                rc->vx = lx / 128;
+            }
+
+            if (ly)
+            {
+                rc->vy = ly / 128;
+            }
+
+        }
+
         startFrame();
 
-        for (int i = 0; i < MAX_ENTITIES; ++i) {
+        for (int i = 0; i < MAX_ENTITIES; ++i)
+        {
+
             if (!ecs->entities[i])
                 continue;
+            
             visual_component *vc = (visual_component*)get_component_from_id(ecs->vc, i);
             rect_component* rc = (rect_component*)get_component_from_id(ecs->pc, i);
+         
+            // MOVEMENT SYSTEM
+            if (rc)
+            {
 
-            if (vc->visible)
-            drawRect(texture, rc->x, rc->y);
+                rc->x += rc->vx;
+                rc->y += rc->vy;
+                
+                if (i != PLAYER)
+                {
+
+                    if (rc->x + rc->w > SCREEN_WIDTH || rc->x < 0)
+                    {
+                        rc->vx *= -1;
+                        rc->x += rc->vx;
+                    }
+
+                    if (rc->y + rc->h > BUFFER_HEIGHT || rc->y < 0)
+                    {
+                        rc->vy *= -1;
+                        rc->y += rc->vy;
+                    }
+
+                }
+
+            }
+
+            // RENDERING SYSTEM
+            if (vc && rc)
+                drawRect(vc, rc);
+
         }
 
         endFrame();
